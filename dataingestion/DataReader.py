@@ -12,10 +12,13 @@ class User:
 
     data = None
     labelData = None
+    dataName = None
     dataPath = None
     labelPath = None
+    windowData = None
 
     def __init__(self, root, dataCsvName, labelCsvName):
+        self.dataName = dataCsvName
         self.dataPath = root + dataCsvName
         self.labelPath = root + labelCsvName
 
@@ -40,3 +43,6 @@ class User:
                     if (end-start > 300):
                         print "large difference found! {}".format(end-start)
                 self.data.loc[start:end, 'gesture'] = gestures.index(gesture) + 1
+
+    def write(self):
+        return self.windowData.to_csv(path_or_buf='data/intermediate/'+self.dataName, sep=',', header=True)
