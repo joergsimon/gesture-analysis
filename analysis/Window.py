@@ -37,6 +37,13 @@ class ArrgretageUser:
         newHeaders += ["{}_mode".format(j) for j in headers]
         newHeaders += ["{}_spectral_centeroid".format(j) for j in headers]
         newHeaders += ["{}_spectral_entropy".format(j) for j in headers]
+        newHeaders += ["{}_ff1".format(j) for j in headers]
+        newHeaders += ["{}_ff2".format(j) for j in headers]
+        newHeaders += ["{}_ff3".format(j) for j in headers]
+        newHeaders += ["{}_ff4".format(j) for j in headers]
+        newHeaders += ["{}_ff5".format(j) for j in headers]
+        newHeaders += ["{}_freq_5sum".format(j) for j in headers]
+        newHeaders += ["{}_bandwidth".format(j) for j in headers]
 
         print 'creating empy frame with len {}'.format(num_windows)
         print 'and headers: {}'.format(newHeaders)
@@ -107,8 +114,11 @@ def stat_describe(array):
    psdsum = sum(psd)
    psdnorm = psd/psdsum
    spectral_entropy = sc.stats.entropy(psdnorm)
+   freq_5sum = freqs[0] + freqs[1] + freqs[2] + freqs[3] + freqs[4];
+   bandwith = max(freqs)-min(freqs)
 
    return np.array([resMean, resStd, resMin, res25Q, resMedian,
                     res75Q, resMax, resRange, resVar, resSkew,
                     resKurtosis, resMode, spectral_centroid,
-                    spectral_entropy])
+                    spectral_entropy, freqs[0], freqs[1], freqs[2],
+                    freqs[3], freqs[4], freq_5sum, bandwith])
