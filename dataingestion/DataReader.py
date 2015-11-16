@@ -17,10 +17,13 @@ class User:
     labelPath = None
     windowData = None
 
-    def __init__(self, root, dataCsvName, labelCsvName):
+    def __init__(self, root, dataCsvName, labelCsvName, loadIntermediate=False):
         self.dataName = dataCsvName
         self.dataPath = root + dataCsvName
         self.labelPath = root + labelCsvName
+        if loadIntermediate:
+            self.read()
+            self.read_csv('data/intermediate/'+self.dataName)
 
     def read(self):
         self.data = self.read_csv(self.dataPath)
