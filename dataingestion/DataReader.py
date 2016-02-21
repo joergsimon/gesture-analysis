@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import os.path
 
 gestures = []
 
@@ -23,7 +23,7 @@ class User:
         self.labelPath = root + labelCsvName
         if loadIntermediate:
             self.read()
-            self.read_csv('data/intermediate/'+self.dataName)
+            self.read_intermediate()
 
     def read(self):
         self.data = self.read_csv(self.dataPath)
@@ -47,5 +47,12 @@ class User:
                         print "large difference found! {}".format(end-start)
                 self.data.loc[start:end, 'gesture'] = gestures.index(gesture) + 1
 
-    def write(self):
+    def has_intermediate_file(self):
+        return os.path.isfile('data/intermediate/'+self.dataName)
+
+    def write_intermediate(self):
         return self.windowData.to_csv(path_or_buf='data/intermediate/'+self.dataName, sep=',', header=True)
+
+    def read_intermediate(self):
+        path = 'data/intermediate/'+self.dataName
+        self.windowData = pd.read_csv(path, sep=',')
