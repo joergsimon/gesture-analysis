@@ -22,6 +22,7 @@ class Classification:
         d = d.values
         mask = np.isnan(d).any(axis=1)
         d = d[~mask]
+        d = np.real(d)
         d = preprocessing.scale(d)
         l = datamatrix.loc[:,'gesture']
         l = l.values

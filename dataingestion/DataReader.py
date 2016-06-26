@@ -13,12 +13,15 @@ class User:
     data = None
     labelData = None
     dataName = None
+    dataLabelName = None
     dataPath = None
     labelPath = None
     windowData = None
+    windowLabel = None
 
     def __init__(self, root, dataCsvName, labelCsvName, loadIntermediate=False):
         self.dataName = dataCsvName
+        self.dataLabelName = labelCsvName
         self.dataPath = root + dataCsvName
         self.labelPath = root + labelCsvName
         if loadIntermediate:
@@ -48,11 +51,15 @@ class User:
                 self.data.loc[start:end, 'gesture'] = gestures.index(gesture) + 1
 
     def has_intermediate_file(self):
-        return os.path.isfile('data/intermediate/'+self.dataName)
+        suc = os.path.isfile('data/intermediate/'+self.dataLabelName)
+        return suc and os.path.isfile('data/intermediate/'+self.dataName)
 
     def write_intermediate(self):
-        return self.windowData.to_csv(path_or_buf='data/intermediate/'+self.dataName, sep=',', header=True)
+        suc = self.windowLabel.to_csv(path_or_buf='data/intermediate/'+self.dataLabelName, sep=',', header=True)
+        return suc and self.windowData.to_csv(path_or_buf='data/intermediate/'+self.dataName, sep=',', header=True)
 
     def read_intermediate(self):
         path = 'data/intermediate/'+self.dataName
         self.windowData = pd.read_csv(path, sep=',')
+        path = 'data/intermediate/'+self.dataLabelName
+        self.windowLabel = pd.read_csv(path, sep=',')

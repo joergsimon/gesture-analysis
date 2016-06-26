@@ -45,12 +45,13 @@ class ArrgretageUser:
 
     def addHeaderFirstTime(self, newHeaders, header):
         if header not in newHeaders:
-            newHeaders += header
+            newHeaders.append(header)
 
     def computeTupelFeatures(self, tupelData, newHeaders, headerPrefix):
         col_range = range(len(tupelData.columns))
         tupels = [ (a,b) for a in col_range for b in col_range if a != b ]
-        unique_tupels = [ (a,b) for a,b in tupels if (b,a) not in tupels]
+        #unique_tupels = [ (a,b) for a,b in tupels if (b,a) not in tupels]
+        res = np.array([])
         for a,b in tupels:
             if tupelData.columns[a] != 'gesture' and tupelData.columns[b] != 'gesture':
                 # compute correlations, vectors, threshholds....
@@ -58,24 +59,41 @@ class ArrgretageUser:
                 # http://docs.scipy.org/doc/scipy-0.14.0/reference/generated/scipy.signal.correlate.html
                 #
                 # angle:
-                vec1 = tupelData.values[:,a]
-                vec2 = tupelData.values[:,b]
+                v1 = tupelData.values[:,a]
+                v2 = tupelData.values[:,b]
+                vec1 = v1/np.linalg.norm(v1)
+                vec2 = v2/np.linalg.norm(v2)
                 angle = np.arccos(np.dot(vec1,vec2))
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_angle".format(headerPrefix,a,b))
 
-                corr, pval = scipy.stats.spearmanr(vec1, vec2)
+                corr, pval = scipy.stats.spearmanr(v1, v2)
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_corr".format(headerPrefix,a,b))
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_pval".format(headerPrefix,a,b))
 
-                fftVec1 = np.fft.rfft(vec1)
-                fftVec2 = np.fft.rfft(vec2)
-                fftAngle = np.arccos(np.dot(fftVec1,fftVec2))
+                # inspired from http://svn.gna.org/svn/relax/tags/4.0.0/lib/geometry/vectors.py
+                fV1 = np.fft.rfft(v1)
+                fV2 = np.fft.rfft(v2)
+
+                i_v1v2 = np.dot(fV1,fV2.conj().T)
+                i_v1v1 = np.dot(fV1, fV1.conj().T)
+                i_v2v2 = np.dot(fV2, fV2.conj().T)
+                ratio = i_v1v2.real / (np.sqrt(i_v1v1).real * np.sqrt(i_v2v2).real)
+                fftAngle = np.arccos(ratio)
+
+                #fftVec1 = fV1/np.linalg.norm(fV1)
+                #fftVec2 = fV2/np.linalg.norm(fV2)
+                #print sum(fftVec1)
+                #print sum(fftVec2)
+                #fftDot = np.dot(fV1,fV2.conj().T)
+                #fftSine = fftDot/(np.linalg.norm(fV1)*np.linalg.norm(fV2))
+                #fftAngle = np.arccos(np.dot(fftVec1,fftVec2.conj().T))
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_fft_angle".format(headerPrefix,a,b))
 
-                fftCorr, fftPval = scipy.stats.spearmanr(fftVec1, fftVec2)
+                fftCorr, fftPval = scipy.stats.spearmanr(fV1, fV2)
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_fft_corr".format(headerPrefix,a,b))
                 self.addHeaderFirstTime(newHeaders, "{}_{}_{}_fft_pval".format(headerPrefix,a,b))
-                return np.array([angle, corr, pval, fftAngle, fftCorr, fftPval])
+                res = np.append(res, np.array([angle, corr, pval, fftAngle, fftCorr, fftPval]))
+        return res
 
 
     def make_rolling_dataset_2(self):
@@ -95,6 +113,7 @@ class ArrgretageUser:
         print "converting to float took {}s".format(t2-t1)
 
         matrix = None
+        labelInfo = []
 
         # for peak detection: the question is, if we first globally detect
         # peaks, and then add the sum to the window, or locally detect
@@ -138,19 +157,22 @@ class ArrgretageUser:
             res = self.computeTupelFeatures(row2,newHeaders,"flex_row2")
             mat = np.append(mat,res)
 
+            counts = subframe.groupby("gesture").size()
+            labelInfo.append(counts)
 
             if matrix is None:
                 matrix = mat
             else:
                 matrix = np.vstack((matrix, mat))
 
+
         newFrame = pd.DataFrame(matrix,index=range(num_windows), columns=newHeaders)
+        newLabels = pd.DataFrame(labelInfo)
 
         print 'Cleaning ...'
 
         #newFrame.gesture = newFrame.gesture.astype(int)
-
-        newFrame['gesture'] = data['gesture']
+        self.user.windowLabel = newLabels
         self.user.windowData = newFrame
 
         l = pd.isnull(newFrame).any(1).nonzero()[0]
