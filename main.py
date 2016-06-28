@@ -19,6 +19,10 @@ import sklearn.tree
 import sklearn.ensemble
 from sklearn.cross_validation import KFold
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.cross_validation import StratifiedKFold
+from sklearn.feature_selection import RFECV
 
 def read_user(path, glove_data, label_data, overwrite_data):
     user = dr.User(path, glove_data, label_data)
@@ -89,19 +93,52 @@ def main():
     # TODO: here compute the labels the way we want it for analysis!
     # first simple approach: just the the major labe in each window:
     windowLabelInfo = windowLabelInfo.drop('Unnamed: 0', 1)
-    windowData = windowData.drop(u'gesture')
+    windowData = windowData.drop(u'gesture', 1)
 
     # permutate the data
     indices = np.random.permutation(windowData.index)
     windowData = windowData.reindex(indices)
     windowLabelInfo = windowLabelInfo.reindex(indices)
 
-    # using a VarianceThreshold directly does not work, so we use the tools method
+
+
+    # prepare data for feature selection:
+    selectLabelDF, exclude = labelMatrixToArray(windowLabelInfo, 150)
+    # now we need to balance the amount of the zero class to the other classes
+    # get all 0 indexes:
+    selectLabelDF = selectLabelDF.drop(exclude)
+    selectData = windowData.drop(exclude)
+    selectLabelDF, selectData, _ = normalizeZeroClass(selectLabelDF, selectData)
+
+    # feature selection using VarianceThreshold filter
     # sel = VarianceThreshold(threshold=(.8 * (1 - .8)))
-    # features = sel.fit_transform(windowData.values)
-    # windowData = pd.DataFrame(features)
-    frame = tools.get_low_variance_columns(windowData, columns=windowData.columns, thresh=0.8, autoremove=True)
-    windowData = frame
+    # fit = sel.fit(selectData.values)
+    # colIndex = fit.get_support(indices=True)
+    # windowData = windowData[windowData.columns[colIndex]]
+
+    # the blow is somehow valid, however:
+    # first I would need to transform the features so each X > 0
+    # (means vor each colum add the col max negative offset to 0 to each value)
+    # but I am more in doupth I should do that as these are univariate
+    # selections, and I am not sure if we are more in the multivariate
+    # world here.
+    # - feature selection getting the X best features based on
+    # - statistical tests for the data. We have 65 sensors,
+    # - or about 12 different single movements in our case
+    # - since in our gesture only complete finger flexation
+    # - or relaxation is interesting so the minimum
+    # - number of features should be in the range of
+    # - 12-65. A good set might be the double amount of that
+    #fit = SelectKBest(chi2, k=65).fit(selectData.values, selectLabelDF.values)
+    #colIndex = fit.get_support(indices=True)
+    #windowData = windowData[windowData.columns[colIndex]]
+
+    # doto: if you use it that way, scale the features
+    svc = svm.SVC(kernel="linear")
+    rfecv = RFECV(estimator=svc, step=100, scoring='accuracy')
+    rfecv.fit(selectData.values, selectLabelDF.values)
+    colIndex = rfecv.get_support(indices=True)
+    windowData = windowData[windowData.columns[colIndex]]
 
     # first we split trining and test already here. this
     # is because of the different learning approach
@@ -125,9 +162,12 @@ def main():
     print("++++++++++++++++")
     print(labelDF)
     print("++++++++++++++++")
+    print("train data size:")
+    print(trainData.shape)
+    print("++++++++++++++++")
     headers = Constants.headers
-    d = trainData.loc[:, headers]
-    d = d.values
+    #d = trainData.loc[:, headers]
+    d = trainData.values #d.values
     d = preprocessing.scale(d)
 
     print(d)
@@ -183,8 +223,8 @@ def main():
     testLabels = testLabels.fillna(0)
     testLabels[testLabels > 0] = 1
 
-    d = testData.loc[:, headers]
-    d = d.values
+    #d = testData.loc[:, headers]
+    d = testData.values #d.values
     d = preprocessing.scale(d)
 
     prediction = clf.predict(d)
