@@ -135,7 +135,7 @@ def main():
 
     # doto: if you use it that way, scale the features
     svc = svm.SVC(kernel="linear")
-    rfecv = RFECV(estimator=svc, step=100, scoring='accuracy')
+    rfecv = RFECV(estimator=svc, step=400, scoring='accuracy')
     rfecv.fit(selectData.values, selectLabelDF.values)
     colIndex = rfecv.get_support(indices=True)
     windowData = windowData[windowData.columns[colIndex]]
