@@ -23,6 +23,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.cross_validation import StratifiedKFold
 from sklearn.feature_selection import RFECV
+from sklearn.feature_selection import RFE
 
 def read_user(path, glove_data, label_data, overwrite_data):
     user = dr.User(path, glove_data, label_data)
@@ -133,12 +134,24 @@ def main():
     #colIndex = fit.get_support(indices=True)
     #windowData = windowData[windowData.columns[colIndex]]
 
-    # doto: if you use it that way, scale the features
-    svc = svm.SVC(kernel="linear")
-    rfecv = RFECV(estimator=svc, step=400, scoring='accuracy')
-    rfecv.fit(selectData.values, selectLabelDF.values)
+    # important toto!
+    # todo: I think also for feature selection we should take care the 0 class is balanced!
+    # todo: if you use it that way, scale the features
+    print "Recursive eleminate features: "
+    svc = sklearn.linear_model.Lasso(alpha = 0.1) #svm.SVR(kernel="linear")
+    print "test fit."
+    svc.fit(selectData.values, np.ravel(selectLabelDF.values))
+    print "run rfecv.."
+    rfecv = RFE(estimator=svc, step=0.1, verbose=2)
+    rfecv.fit(selectData.values, np.ravel(selectLabelDF.values))
+    print "get support..."
     colIndex = rfecv.get_support(indices=True)
+    print "shrink data to selected features...."
     windowData = windowData[windowData.columns[colIndex]]
+    print windowData.shape
+
+    print "selected headers: "
+    print windowData.columns
 
     # first we split trining and test already here. this
     # is because of the different learning approach
