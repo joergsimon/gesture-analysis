@@ -29,7 +29,10 @@ class User:
             self.read_intermediate()
 
     def read(self):
+        print "start reading raw data:"
         self.data = self.read_csv(self.dataPath)
+        print "convolution filter data:"
+        print "add labels to data:"
         self.labelData = self.read_csv(self.labelPath)
         self.add_gesture_column()
         self.add_labels_to_data()
