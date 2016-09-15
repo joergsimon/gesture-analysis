@@ -20,15 +20,36 @@ class Constants:
         h = np.array(self.raw_headers)
         return h[idx].tolist()
 
+    def imu_accel_headers(self, imu_idx):
+        return self.get_triples('accel', imu_idx)
+
+    def imu_gyro_headers(self, imu_idx):
+        return self.get_triples('gyro', imu_idx)
+
+    def get_triples(self, header, imu_idx):
+        index_in_index = self.get_triple_idxs(header, imu_idx).tolist()
+        h = np.array(self.raw_headers)
+        return h[index_in_index].tolist()
+
+    def get_triple_idxs(self, header, imu_idx):
+        all_idx = np.array(self.raw_indices[header])
+        index_in_index = all_idx[imu_idx * 3:imu_idx * 3 + 3]
+        return index_in_index
+
+
     gesture_field = "gesture"
     label_type_automatic = "G"
 
     init_data_dir = 'data/raw/'
     init_data_meta = 'data/intermediate/step1/meta.pkl'
     init_data_cache_file = 'data/intermediate/step1/pandas_blob.pkl'
+    preprocessed_data_cache_file = 'data/intermediate/step1/pandas_blob_preprocessed.pkl'
 
     LSB_PER_G = 16384
     LSB_PER_DEG_PER_SEC = 65.5
+
+    number_imus = 7
+    dt = 0.012
 
     # legacy:
     headers = ConstantsOld.headers
