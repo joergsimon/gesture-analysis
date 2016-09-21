@@ -36,7 +36,9 @@ class DirectoryBasedReader:
                     if (end - start > 300):
                         print "large difference found! {}".format(end - start)
                     gesture_num = knowngestures.index(gesture) + 1
-                    gestures[start:end] = gesture_num
+                    if (start < gestures.size):
+                        real_end = min(end, gestures.size-1)
+                        gestures[start:real_end] = gesture_num
 
         data['gesture'] = gestures
 

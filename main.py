@@ -8,4 +8,5 @@ init_input = InitialInput(const)
 data = None
 if not has_preprocess_basic_cache(const):
     data = init_input.read_all_data_init()
+const.remove_stripped_headers()
 data = preprocess_basic(data,const)

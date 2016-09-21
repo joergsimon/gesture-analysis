@@ -1,6 +1,7 @@
 from const.constants_old import ConstantsOld
 import json
 import numpy as np
+import pickle
 
 class Constants:
 
@@ -36,6 +37,21 @@ class Constants:
         index_in_index = all_idx[imu_idx * 3:imu_idx * 3 + 3]
         return index_in_index
 
+    def remove_stripped_headers(self):
+        self.raw_headers.remove('63_Magnetometer_X_ignore_double')
+        self.raw_headers.remove('64_Magnetometer_Y_ignore_double')
+        self.raw_headers.remove('65_Magnetometer_Z_ignore_double')
+
+    def save_preprocess_updates(self):
+        with open(self.preprocessed_data_meta, 'wb') as file:
+            pickle.dump(self.raw_file_descripton, file)
+
+    def load_preprocess_updates(self):
+        with open(self.preprocessed_data_meta) as file:
+            self.raw_file_descripton = pickle.load(file)
+            self.raw_headers = self.raw_file_descripton[u'headers_array']
+            self.raw_indices = self.raw_file_descripton[u'indices']
+
 
     gesture_field = "gesture"
     label_type_automatic = "G"
@@ -43,13 +59,17 @@ class Constants:
     init_data_dir = 'data/raw/'
     init_data_meta = 'data/intermediate/step1/meta.pkl'
     init_data_cache_file = 'data/intermediate/step1/pandas_blob.pkl'
-    preprocessed_data_cache_file = 'data/intermediate/step1/pandas_blob_preprocessed.pkl'
+    preprocessed_data_meta = 'data/intermediate/step2/meta_preprocessed.pkl'
+    preprocessed_data_cache_file = 'data/intermediate/step2/pandas_blob_preprocessed.pkl'
 
     LSB_PER_G = 16384
     LSB_PER_DEG_PER_SEC = 65.5
 
     number_imus = 7
     dt = 0.012
+
+    window_size = 200
+    step_size = 30
 
     # legacy:
     headers = ConstantsOld.headers

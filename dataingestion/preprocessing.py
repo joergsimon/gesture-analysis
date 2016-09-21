@@ -4,16 +4,19 @@ import pandas as pd
 from utils.freshrotation import euler_matrix
 from utils.freshrotation import vector_slerp
 from dataingestion.cache_control import has_preprocess_basic_cache
+from utils.header_tools import create_new_header
 
 def preprocess_basic(data,const):
     if has_preprocess_basic_cache(const):
-        data == pd.read_pickle(const.init_data_cache_file)
+        data = pd.read_pickle(const.preprocessed_data_cache_file)
+        const.load_preprocess_updates()
         return data
     else:
         convert_values(data,const)
         convolution_filter(data,const)
         compute_orientation_indipendent_accel(data,const)
-        data.to_pickle(const.init_data_cache_file)
+        data.to_pickle(const.preprocessed_data_cache_file)
+        const.save_preprocess_updates()
         return data
 
 
@@ -55,15 +58,74 @@ def convolution_filter(data, const):
     accel_headers = const.filter_raw_header('accel')
     for header in accel_headers:
         index = accel_headers.index(header)
-        h = "{}_lin_accel".format(header)
+        old_index = const.raw_headers.index(header)
+        new_index = len(data.columns)
+        h = create_new_header(header,new_index, "lin_accel")
         data[h] = LAs[:,index]
-        if const.raw_indices['lin_accel'] == None:
+        if 'lin_accel' not in const.raw_indices:
             const.raw_indices['lin_accel'] = []
-        const.raw_indices['lin_accel'].append(index)
-        # TODO: add to finger 1,2,3,4,thumb etc.
+        const.raw_indices['lin_accel'].append(new_index)
+        const.raw_headers.append(h)
+        add_new_idx_to_hand(old_index,new_index,const)
+    print(const.raw_indices['lin_accel'])
+    print(const.raw_headers)
 
 def compute_orientation_indipendent_accel(data,const):
+    absolute_something("accel","absolute_froce",data,const)
+    absolute_something("lin_accel", "absolute_lin_froce", data, const)
+    direction_cosine(data,const)
+
+def absolute_something(type,new_type,data,const):
     for i in range(const.number_imus):
-        pass
+        headers = const.get_triples(type,i)
+        sqsum = data[headers[0]]**2 + data[headers[1]]**2 + data[headers[2]]**2
+        header0 = headers[0]
+        old_index = const.raw_headers.index(header0)
+        new_index = len(data.columns)
+        header0 = header0.replace("_X", "")
+        h = create_new_header(header0, new_index, new_type)
+        data[h] = np.sqrt(sqsum)
+        const.raw_headers.append(h)
+        if new_type not in const.raw_indices:
+            const.raw_indices[new_type] = []
+        const.raw_indices[new_type].append(new_index)
+        add_new_idx_to_hand(old_index,new_index,const)
+
+def direction_cosine(data,const):
+    for i in range(const.number_imus):
+        headers = const.get_triples("gyro",i)
+        sqsum = data[headers[0]]**2 + data[headers[1]]**2 + data[headers[2]]**2
+        rot_force = np.sqrt(sqsum)
+        for header in headers:
+            old_index = const.raw_headers.index(header)
+            new_index = len(data.columns)
+            h = create_new_header(header, new_index, "direction_cosine")
+            data[h] = data[header] / rot_force
+            const.raw_headers.append(h)
+            if "direction_cosine" not in const.raw_indices:
+                const.raw_indices["direction_cosine"] = []
+            const.raw_indices["direction_cosine"].append(new_index)
+            add_new_idx_to_hand(old_index, new_index, const)
+
+
+def add_new_idx_to_hand(base_idx, new_idx, const):
+    if base_idx in const.raw_indices['thumb']['all']:
+        const.raw_indices['thumb']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['finger_1']['all']:
+        const.raw_indices['finger_1']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['finger_3']['all']:
+        const.raw_indices['finger_2']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['finger_3']['all']:
+        const.raw_indices['finger_3']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['finger_4']['all']:
+        const.raw_indices['finger_4']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['wrist']['all']:
+        const.raw_indices['wrist']['all'].append(new_idx)
+    elif base_idx in const.raw_indices['wrist']['flex']:
+        const.raw_indices['wrist']['flex'].append(new_idx)
+    elif base_idx in const.raw_indices['wrist']['imu']:
+        const.raw_indices['wrist']['imu'].append(new_idx)
+    elif base_idx in const.raw_indices['palm']['all']:
+        const.raw_indices['palm']['all'].append(new_idx)
 
 
