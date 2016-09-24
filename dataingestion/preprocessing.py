@@ -1,10 +1,10 @@
 import numpy as np
-import os.path as path
 import pandas as pd
 from utils.freshrotation import euler_matrix
 from utils.freshrotation import vector_slerp
 from dataingestion.cache_control import has_preprocess_basic_cache
 from utils.header_tools import create_new_header
+from utils.header_tools import add_new_idx_to_hand
 
 def preprocess_basic(data,const):
     if has_preprocess_basic_cache(const):
@@ -12,6 +12,7 @@ def preprocess_basic(data,const):
         const.load_preprocess_updates()
         return data
     else:
+        print ("preprocess data")
         convert_values(data,const)
         convolution_filter(data,const)
         compute_orientation_indipendent_accel(data,const)
@@ -66,7 +67,7 @@ def convolution_filter(data, const):
             const.raw_indices['lin_accel'] = []
         const.raw_indices['lin_accel'].append(new_index)
         const.raw_headers.append(h)
-        add_new_idx_to_hand(old_index,new_index,const)
+        add_new_idx_to_hand(old_index,new_index,False,const)
     print(const.raw_indices['lin_accel'])
     print(const.raw_headers)
 
@@ -89,7 +90,7 @@ def absolute_something(type,new_type,data,const):
         if new_type not in const.raw_indices:
             const.raw_indices[new_type] = []
         const.raw_indices[new_type].append(new_index)
-        add_new_idx_to_hand(old_index,new_index,const)
+        add_new_idx_to_hand(old_index,new_index,True,const)
 
 def direction_cosine(data,const):
     for i in range(const.number_imus):
@@ -105,27 +106,6 @@ def direction_cosine(data,const):
             if "direction_cosine" not in const.raw_indices:
                 const.raw_indices["direction_cosine"] = []
             const.raw_indices["direction_cosine"].append(new_index)
-            add_new_idx_to_hand(old_index, new_index, const)
-
-
-def add_new_idx_to_hand(base_idx, new_idx, const):
-    if base_idx in const.raw_indices['thumb']['all']:
-        const.raw_indices['thumb']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['finger_1']['all']:
-        const.raw_indices['finger_1']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['finger_3']['all']:
-        const.raw_indices['finger_2']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['finger_3']['all']:
-        const.raw_indices['finger_3']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['finger_4']['all']:
-        const.raw_indices['finger_4']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['wrist']['all']:
-        const.raw_indices['wrist']['all'].append(new_idx)
-    elif base_idx in const.raw_indices['wrist']['flex']:
-        const.raw_indices['wrist']['flex'].append(new_idx)
-    elif base_idx in const.raw_indices['wrist']['imu']:
-        const.raw_indices['wrist']['imu'].append(new_idx)
-    elif base_idx in const.raw_indices['palm']['all']:
-        const.raw_indices['palm']['all'].append(new_idx)
+            add_new_idx_to_hand(old_index, new_index, True, const)
 
 

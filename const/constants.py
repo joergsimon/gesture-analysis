@@ -52,6 +52,19 @@ class Constants:
             self.raw_headers = self.raw_file_descripton[u'headers_array']
             self.raw_indices = self.raw_file_descripton[u'indices']
 
+    def save_window_updates(self):
+        with open(self.window_data_meta, 'wb') as file:
+            pickle.dump(self.feature_description, file)
+
+    def load_window_updates(self):
+        with open(self.window_data_meta) as file:
+            self.feature_description = pickle.load(file)
+            self.feature_indices = self.feature_description['indices']
+            self.feature_headers = self.feature_description['feature_headers_array']
+
+    feature_description = {}
+    feature_indices = None
+    feature_headers = None
 
     gesture_field = "gesture"
     label_type_automatic = "G"
@@ -61,6 +74,9 @@ class Constants:
     init_data_cache_file = 'data/intermediate/step1/pandas_blob.pkl'
     preprocessed_data_meta = 'data/intermediate/step2/meta_preprocessed.pkl'
     preprocessed_data_cache_file = 'data/intermediate/step2/pandas_blob_preprocessed.pkl'
+    window_data_meta = 'data/intermediate/step3/meta_window.pkl'
+    window_data_cache_file = 'data/intermediate/step3/pandas_blob_preprocessed.pkl'
+    window_label_cache_file = 'data/intermediate/step3/pandas_label_blob_preprocessed.pkl'
 
     LSB_PER_G = 16384
     LSB_PER_DEG_PER_SEC = 65.5
@@ -71,6 +87,8 @@ class Constants:
     window_size = 200
     step_size = 30
 
+    label_threshold = 47
+
     # legacy:
     headers = ConstantsOld.headers
     gesture_names = ConstantsOld.gesture_names
@@ -79,6 +97,24 @@ class Constants:
     flex_map = ConstantsOld.flex_map
     hand_row_1 = ConstantsOld.hand_row_1
     hand_row_2 = ConstantsOld.hand_row_2
+
+    def index_dict(self):
+        dict = {
+            'thumb': {'all': []},
+            'finger_1': {'all': []},
+            'finger_2': {'all': []},
+            'finger_3': {'all': []},
+            'finger_4': {'all': []},
+            'wrist': {'all': [], 'flex': [], 'imu': []},
+            'palm': {'all': []},
+            "flex": {"all": [], "row_1": [], "row_2": []},
+            "pressure": [],
+            "accel": [],
+            "gyro": [],
+            "lin_accel": [],
+            "magnetometer": [],
+        }
+        return dict
 
 # The values in order (16bit values):
 # 0: Thumb base
