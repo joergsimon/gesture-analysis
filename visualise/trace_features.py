@@ -1,7 +1,11 @@
 
 def trace_feature_origin(feature_indexes,const):
     dict = dict_feature_sortet(feature_indexes, const)
-    report_percent(const.feature_indices,dict)
+    if (len(feature_indexes) > 500):
+        report_percent(const.feature_indices,dict)
+    else:
+        report_absolute(const.feature_indices,dict)
+
 
 def report_percent(full_dict,selected_dict):
     for f_key in full_dict:
@@ -16,6 +20,17 @@ def report_percent(full_dict,selected_dict):
                 s_val = selected_dict[f_key][if_key]
                 percent = len(s_val) / float(len(if_val))
                 print "{0}/{1} has {2:.2f}%".format(f_key,if_key,percent)
+
+def report_absolute(full_dict,selected_dict):
+    for f_key in full_dict:
+        f_val = full_dict[f_key]
+        if type(f_val) is list:
+            s_val = selected_dict[f_key]
+            print "{0} has {1} features".format(f_key, len(s_val))
+        elif type(f_val) is dict:
+            for if_key in f_val:
+                s_val = selected_dict[f_key][if_key]
+                print "{0}/{1} has {2} features".format(f_key,if_key,len(s_val))
 
 
 def dict_feature_sortet(feature_indexes, const):
@@ -42,6 +57,7 @@ def dict_feature_sortet(feature_indexes, const):
             dict['palm']['all'].append(feature_idx)
         else:
             print "(trace) fatal: hand index not found {}".format(feature_idx)
+            print "(trace) fatal: header: {}".format(const.feature_headers[feature_idx])
 
         # then add back to sensor:
         if feature_idx in const.feature_indices['flex']['all']:
@@ -62,5 +78,6 @@ def dict_feature_sortet(feature_indexes, const):
             dict['lin_accel'].append(feature_idx)
         else:
             print "(trace) fatal: sensor index not found {}".format(feature_idx)
+            print "(trace) fatal: header: {}".format(const.feature_headers[feature_idx])
 
     return dict

@@ -62,20 +62,21 @@ def create_headers(const):
     create_feature_id_struct(const)
     feature_headers = []
     feature_names = stat_describe_feature_names()
-    headers = const.raw_headers
-    if 'gesture' in headers:
-        headers.remove('gesture')
-    for header in headers:
-        sensor_idx = headers.index(header)
+    for header in const.raw_headers:
+        if header == 'gesture':
+            continue
+        sensor_idx = const.raw_headers.index(header)
+        if (sensor_idx == 64 ):
+            print("bla")
         idx = header.find("_")
         num = header[:idx]
-        offset = sensor_idx * len(feature_names)
+        offset = len(feature_headers)
         for f_name in feature_names:
             f_idx = feature_names.index(f_name)
             comb_num = "{}_{}".format(num, f_idx)
             h = create_new_header(header, comb_num, f_name)
             feature_headers.append(h)
-            add_new_idx_of_feature_to_hand(sensor_idx, (offset + f_idx), const)
+            add_new_idx_of_feature_to_hand(sensor_idx, (offset + f_idx), const, header, h)
     const.feature_description['feature_headers_array'] = feature_headers
     const.feature_headers = feature_headers
 
@@ -84,7 +85,7 @@ def create_feature_id_struct(const):
     const.feature_description["indices"] = feature_indices
     const.feature_indices = feature_indices
 
-def add_new_idx_of_feature_to_hand(sensor_idx, feature_idx, const):
+def add_new_idx_of_feature_to_hand(sensor_idx, feature_idx, const, debug_header, debug_feature):
     # first at to part of hand:
     if sensor_idx in const.raw_indices['thumb']['all']:
         const.feature_indices['thumb']['all'].append(feature_idx)
@@ -106,6 +107,7 @@ def add_new_idx_of_feature_to_hand(sensor_idx, feature_idx, const):
         const.feature_indices['palm']['all'].append(feature_idx)
     else:
         print "(feature) fatal: hand index not found {} (new: {})".format(sensor_idx, feature_idx)
+        print "(feature) fatal: header: {} (feature: {})".format(debug_header, debug_feature)
 
     # then add back to sensor:
     if sensor_idx in const.raw_indices['flex']['all']:
@@ -126,3 +128,4 @@ def add_new_idx_of_feature_to_hand(sensor_idx, feature_idx, const):
         const.feature_indices['lin_accel'].append(feature_idx)
     else:
         print "(feature) fatal: sensor index not found {} (new: {})".format(sensor_idx, feature_idx)
+        print "(feature) fatal: header: {} (feature: {})".format(debug_header, debug_feature)
