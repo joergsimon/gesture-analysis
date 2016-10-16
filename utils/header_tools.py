@@ -66,8 +66,6 @@ def create_headers(const):
         if header == 'gesture':
             continue
         sensor_idx = const.raw_headers.index(header)
-        if (sensor_idx == 64 ):
-            print("bla")
         idx = header.find("_")
         num = header[:idx]
         offset = len(feature_headers)

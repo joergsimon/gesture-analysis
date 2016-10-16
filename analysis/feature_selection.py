@@ -8,6 +8,8 @@ import sklearn.linear_model
 import sklearn.preprocessing as pp
 import sklearn.svm as svm
 import sklearn.feature_selection as fs
+from analysis.classification import fit_classifier
+from sklearn.metrics import classification_report
 
 # Interesting References:
 # RFECV:
@@ -21,13 +23,41 @@ def feature_selection(train_data, train_labels, const):
 
     print "num features before selection: {}".format(train_data_clean.columns.size)
     feature_index = variance_threshold(train_data_clean)
+    clf, clf_name, needs_scaling = fit_classifier(train_data_clean.values[:,feature_index], np.array(train_labels_arr))
+    prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
+    print("report for {} after variance threshold".format(clf_name))
+    print(classification_report(train_labels_arr,prediction))
     trace_feature_origin(feature_index,const)
+
     feature_index = rfe(train_data_clean,train_labels_arr)
+    clf, clf_name, needs_scaling = fit_classifier(train_data_clean.values[:, feature_index], np.array(train_labels_arr))
+    prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
+    print("report for {} after RFE".format(clf_name))
+    print(classification_report(train_labels_arr, prediction))
     trace_feature_origin(feature_index, const)
+
     feature_index = k_best_chi2(train_data_clean, train_labels_arr, 700)
+    clf, clf_name, needs_scaling = fit_classifier(train_data_clean.values[:, feature_index], np.array(train_labels_arr))
+    prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
+    print("report for {} after Chi2".format(clf_name))
+    print(classification_report(train_labels_arr, prediction))
     trace_feature_origin(feature_index, const)
+
     feature_index = rfe_cv_f1(train_data_clean, train_labels_arr)
+    clf, clf_name, needs_scaling = fit_classifier(train_data_clean.values[:, feature_index], np.array(train_labels_arr))
+    prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
+    print("report for {} after RFECV".format(clf_name))
+    print(classification_report(train_labels_arr, prediction))
     trace_feature_origin(feature_index, const)
+
+def get_values(data, feature_index, needs_scaling):
+    if needs_scaling:
+        values = data.values[:, feature_index]
+        minmax = pp.MinMaxScaler()
+        values = minmax.fit_transform(values)
+        return values
+    else:
+        return data.values[:, feature_index]
 
 def variance_threshold(train_data):
     # feature selection using VarianceThreshold filter
@@ -43,11 +73,15 @@ def rfe(train_data, train_labels):
     # todo: if you use it that way, scale the features
     print "Recursive eleminate features: "
     svc = sklearn.linear_model.Lasso(alpha = 0.1) #svm.SVR(kernel="linear")
+    print "scale data"
+    values = train_data.values
+    minmax = pp.MinMaxScaler()
+    values = minmax.fit_transform(values)  # pp.scale(values)
     print "test fit."
-    svc.fit(train_data.values, np.array(train_labels))
+    svc.fit(values, np.array(train_labels))
     print "run rfecv.."
     rfecv = fs.RFE(estimator=svc, step=0.1, verbose=2)
-    rfecv.fit(train_data.values, np.array(train_labels))
+    rfecv.fit(values, np.array(train_labels))
     print "get support..."
     col_index = rfecv.get_support(indices=True)
     print "num features selected by RFE(CV)/Lasso: {}".format(len(col_index))
