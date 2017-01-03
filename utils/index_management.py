@@ -98,6 +98,12 @@ def add_new_idx_of_feature_to_hand(sensor_idx, feature_idx, const, debug_header,
         pass
     elif add(sensor_idx, feature_idx, const, 'lin_accel'):
         pass
+    elif add(sensor_idx, feature_idx, const, 'direction_cosine'):
+        pass
+    elif add(sensor_idx, feature_idx, const, 'absolute_froce'):
+        pass
+    elif add(sensor_idx, feature_idx, const, 'absolute_lin_froce'):
+        pass
     else:
         print "(feature) fatal: sensor index not found {} (new: {})".format(sensor_idx, feature_idx)
         print "(feature) fatal: header: {} (feature: {})".format(debug_header, debug_feature)

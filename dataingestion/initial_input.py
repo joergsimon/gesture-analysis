@@ -40,7 +40,7 @@ class InitialInput:
         knowngestures = []
         for glove_data, label_data in file_tuples:
             d = self.reader.read(glove_data, label_data, knowngestures)
-            if data == None:
+            if data is None:
                 data = d
             else:
                 data = pd.concat([data, d])

@@ -52,7 +52,7 @@ def transform_to_windows(data,const):
         offset = i * const.step_size
 
         # COMPUTE Features for Single Signals:
-        subframe = data.loc[offset:offset + const.window_size]
+        subframe = data.iloc[offset:(offset + const.window_size)]
         subframe = subframe._get_numeric_data()
         mat = single_value_features(subframe.values[:, 0])
         sub_range = range(1, len(subframe.columns))
