@@ -14,15 +14,15 @@ needsNoScaling = False
 classifiers = [("svc[ovo]",svm.SVC(decision_function_shape='ovo'), needsScaling),
                ("svc",svm.SVC(), needsScaling),
                ("lin svc",svm.LinearSVC(), needsScaling),
-               ("lr",lm.LogisticRegression(), needsNoScaling),
+               ("lr",lm.LogisticRegression(), needsScaling),
                ("nn",nc.NearestCentroid(), needsScaling),
                ("lr(l1)",lm.LogisticRegression(penalty='l1'), needsScaling),
                ("sgd[hinge]",lm.SGDClassifier(loss="hinge", penalty="l2"), needsScaling),
                ("navie bayse",nb.MultinomialNB(), needsScaling),
                ("decision tree",tree.DecisionTreeClassifier(), needsNoScaling),
                ("random forrest",em.RandomForestClassifier(n_estimators=10), needsNoScaling),
-               ("ada boost",em.AdaBoostClassifier(n_estimators=100), needsNoScaling),
-               ("gradient boost",em.GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0), needsNoScaling)]
+               ("ada boost",em.AdaBoostClassifier(n_estimators=100), needsScaling),
+               ("gradient boost",em.GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0), needsScaling)]
 
 def fit_classifier(values, labels):
     clf = None

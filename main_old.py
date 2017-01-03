@@ -1,29 +1,24 @@
-import dataingestion.DataReader as dr
-import numpy as np
-import analysis.Window as wd
-import pandas as pd
 import os
 import os.path as path
-from const.constants import Constants
-import tools
 
+import numpy as np
+import pandas as pd
+import sklearn
+import sklearn.ensemble
+import sklearn.linear_model
+import sklearn.naive_bayes
+import sklearn.neighbors.nearest_centroid
+import sklearn.tree
 from sklearn import preprocessing
 from sklearn import svm
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import classification_report
-import sklearn
-import sklearn.linear_model
-import sklearn.neighbors.nearest_centroid
-import sklearn.naive_bayes
-import sklearn.tree
-import sklearn.ensemble
 from sklearn.cross_validation import KFold
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
-from sklearn.cross_validation import StratifiedKFold
-from sklearn.feature_selection import RFECV
 from sklearn.feature_selection import RFE
+from sklearn.metrics import classification_report
+
+import analysis.old.Window as wd
+import dataingestion.DataReader as dr
+from const.constants import Constants
+
 
 def read_user(path, glove_data, label_data, overwrite_data):
     user = dr.User(path, glove_data, label_data)

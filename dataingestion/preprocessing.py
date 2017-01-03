@@ -4,7 +4,7 @@ from utils.freshrotation import euler_matrix
 from utils.freshrotation import vector_slerp
 from dataingestion.cache_control import has_preprocess_basic_cache
 from utils.header_tools import create_new_header
-from utils.header_tools import add_new_idx_to_hand
+from utils.index_management import add_new_idx_to_hand
 
 def preprocess_basic(data,const):
     if has_preprocess_basic_cache(const):

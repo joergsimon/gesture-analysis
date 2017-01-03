@@ -1,7 +1,10 @@
-from const.constants_old import ConstantsOld
 import json
-import numpy as np
 import pickle
+
+import numpy as np
+
+from const.old.constants_old import ConstantsOld
+
 
 class Constants:
 

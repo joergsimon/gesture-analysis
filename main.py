@@ -19,6 +19,14 @@ def main():
     data, labels = get_windows(data, const)
     create_headers(const)
 
+    print("flex const index trace info / main:")
+    print(len(const.feature_indices['flex']['row_1']))
+    print(len(const.feature_indices['flex']['row_2']))
+    r1 = []
+    for i in const.feature_indices['flex']['row_1']:
+        r1.append(const.feature_headers[i])
+    print(r1)
+
     # permutate the data
     data, labels = permutate(data, labels)
     # split train and testset

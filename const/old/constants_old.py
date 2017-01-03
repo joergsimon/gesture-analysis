@@ -1,4 +1,4 @@
-import const.indices as indices
+import const.old.indices as indices
 
 class ConstantsOld:
 
@@ -24,13 +24,13 @@ class ConstantsOld:
                 indices.wrist_extension]
 
     hand_row_1 = [indices.thumb_base,
-                indices.finger1_base,
-                indices.finger2_base,
-                indices.finger3_base,
-                indices.finger4_base]
+                  indices.finger1_base,
+                  indices.finger2_base,
+                  indices.finger3_base,
+                  indices.finger4_base]
 
     hand_row_2 = [indices.thumb_tip,
-                indices.finger1_tip,
-                indices.finger2_tip,
-                indices.finger3_tip,
-                indices.finger4_tip]
+                  indices.finger1_tip,
+                  indices.finger2_tip,
+                  indices.finger3_tip,
+                  indices.finger4_tip]

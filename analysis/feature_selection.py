@@ -1,6 +1,7 @@
 from analysis.preparation import labelMatrixToArray
 from analysis.preparation import normalizeZeroClassArray
 from visualise.trace_features import trace_feature_origin
+from visualise.confusion_matrix import plot_confusion_matrix
 
 import numpy as np
 import sklearn
@@ -10,6 +11,8 @@ import sklearn.svm as svm
 import sklearn.feature_selection as fs
 from analysis.classification import fit_classifier
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
 
 # Interesting References:
 # RFECV:
@@ -27,6 +30,10 @@ def feature_selection(train_data, train_labels, const):
     prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
     print("report for {} after variance threshold".format(clf_name))
     print(classification_report(train_labels_arr,prediction))
+    cnf_matrix = confusion_matrix(train_labels_arr, prediction)
+    plt.figure()
+    plot_confusion_matrix(cnf_matrix, classes=['0.0','1.0','2.0','3.0','4.0','5.0','6.0','7.0'],
+                          title="Confusion Matrix for {} after variance threshold".format(clf_name))
     trace_feature_origin(feature_index,const)
 
     feature_index = rfe(train_data_clean,train_labels_arr)
@@ -34,6 +41,10 @@ def feature_selection(train_data, train_labels, const):
     prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
     print("report for {} after RFE".format(clf_name))
     print(classification_report(train_labels_arr, prediction))
+    cnf_matrix = confusion_matrix(train_labels_arr, prediction)
+    plt.figure()
+    plot_confusion_matrix(cnf_matrix, classes=['0.0','1.0','2.0','3.0','4.0','5.0','6.0','7.0'],
+                          title="Confusion Matrix for {} after variance threshold".format(clf_name))
     trace_feature_origin(feature_index, const)
 
     feature_index = k_best_chi2(train_data_clean, train_labels_arr, 700)
@@ -41,6 +52,10 @@ def feature_selection(train_data, train_labels, const):
     prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
     print("report for {} after Chi2".format(clf_name))
     print(classification_report(train_labels_arr, prediction))
+    cnf_matrix = confusion_matrix(train_labels_arr, prediction)
+    plt.figure()
+    plot_confusion_matrix(cnf_matrix, classes=['0.0','1.0','2.0','3.0','4.0','5.0','6.0','7.0'],
+                          title="Confusion Matrix for {} after variance threshold".format(clf_name))
     trace_feature_origin(feature_index, const)
 
     feature_index = rfe_cv_f1(train_data_clean, train_labels_arr)
@@ -48,7 +63,13 @@ def feature_selection(train_data, train_labels, const):
     prediction = clf.predict(get_values(train_data_clean, feature_index, needs_scaling))
     print("report for {} after RFECV".format(clf_name))
     print(classification_report(train_labels_arr, prediction))
+    cnf_matrix = confusion_matrix(train_labels_arr, prediction)
+    plt.figure()
+    plot_confusion_matrix(cnf_matrix, classes=['0.0','1.0','2.0','3.0','4.0','5.0','6.0','7.0'],
+                          title="Confusion Matrix for {} after variance threshold".format(clf_name))
     trace_feature_origin(feature_index, const)
+
+    plt.show()
 
 def get_values(data, feature_index, needs_scaling):
     if needs_scaling:
