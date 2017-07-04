@@ -37,7 +37,8 @@ class Constants:
 
     def get_triple_idxs(self, header, imu_idx):
         all_idx = np.array(self.raw_indices[header])
-        index_in_index = all_idx[imu_idx * 3:imu_idx * 3 + 3]
+        base_idx = imu_idx*3
+        index_in_index = all_idx[base_idx:base_idx + 3]
         return index_in_index
 
     def remove_stripped_headers(self):

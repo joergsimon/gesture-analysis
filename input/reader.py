@@ -40,7 +40,8 @@ class DirectoryBasedReader:
                         real_end = min(end, gestures.size-1)
                         gestures[start:real_end] = gesture_num
 
-        self.const.raw_headers.append('gesture')
+        if not 'gesture' in self.const.raw_headers:
+            self.const.raw_headers.append('gesture')
         data['gesture'] = gestures
 
         return data

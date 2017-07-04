@@ -23,6 +23,7 @@ classifiers = [("svc[ovo]",svm.SVC(decision_function_shape='ovo'), needsScaling)
                ("random forrest",em.RandomForestClassifier(n_estimators=10), needsNoScaling),
                ("ada boost",em.AdaBoostClassifier(n_estimators=100), needsScaling),
                ("gradient boost",em.GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0), needsScaling)]
+# what I still would like to have: kNN, maybe a neural network, deep learning would be awesome...
 
 def fit_classifier(values, labels):
     clf = None

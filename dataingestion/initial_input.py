@@ -43,7 +43,7 @@ class InitialInput:
             if data is None:
                 data = d
             else:
-                data = pd.concat([data, d])
+                data = pd.concat([data, d], ignore_index=True)
         return data
 
     def save_cache(self, file_tuples, data):
